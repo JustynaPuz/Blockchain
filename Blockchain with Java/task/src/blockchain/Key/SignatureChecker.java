@@ -1,5 +1,6 @@
 package blockchain.Key;
 
+import blockchain.BlockData.ISignableData;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Signature;

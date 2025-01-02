@@ -7,24 +7,26 @@ import blockchain.BlockData.IBlockData;
 import blockchain.User.User;
 import java.util.List;
 
-public class Miner<T extends IBlockData> extends User<T> implements Runnable {
-    protected final int minerNumber;
+public class Miner<T extends IBlockData> extends User<T> {
 
-    public Miner(int minerNumber, BlockChain<T> blockChain) {
-        super(blockChain, "Miner" + minerNumber);
-        this.minerNumber = minerNumber;
+    public Miner(String name, BlockChain<T> blockChain) {
+        super(blockChain, name);
     }
 
     private Block<T> createBlock() {
         List<T> data = blockchain.getData();
         return new Block<>(blockchain.getNumberOfBlocks() + 1,
-                blockchain.getLastBlockHashcode(), minerNumber, data, publicKey);
+                blockchain.getLastBlockHashcode(), Integer.parseInt(name.substring(5)), data, publicKey);
     }
 
     @Override
-    public void run() {
-        while (!Thread.currentThread().isInterrupted()) {
-            blockchain.tryToAddBlock(createBlock());
-        }
+    protected long getSleepTime() {
+        return 0;
+    }
+
+
+    @Override
+    protected void doWork() {
+        blockchain.tryToAddBlock(createBlock());
     }
 }

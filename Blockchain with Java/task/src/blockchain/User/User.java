@@ -7,34 +7,41 @@ import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
-public abstract class User<T extends IBlockData> {
+public abstract class User<T extends IBlockData> implements Runnable {
 
   protected BlockChain<T> blockchain;
   protected PrivateKey privateKey;
   protected PublicKey publicKey;
-  private int virtualCoins;
   protected String name;
 
   public User(BlockChain<T> chain, String name) {
     KeyPair keyPair;
     try {
       keyPair = GenerateKeys.generateKeyPair();
+      this.privateKey = keyPair.getPrivate();
+      this.publicKey = keyPair.getPublic();
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-    this.privateKey = keyPair.getPrivate();
-    this.publicKey = keyPair.getPublic();
     this.blockchain = chain;
-    this.virtualCoins = 100;
     this.name = name;
   }
 
-  public int getVirtualCoins() {
-    return virtualCoins;
+  @Override
+  public final void run() {
+    while (!Thread.currentThread().isInterrupted()) {
+      doWork();
+      try {
+        Thread.sleep(getSleepTime());
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
+    }
   }
-  public void addCoins(int VC) {
-    virtualCoins += VC;
-  }
+
+  protected abstract long getSleepTime();
+
+  protected abstract void doWork();
 
   public PublicKey getPublicKey() {
     return publicKey;

@@ -24,16 +24,16 @@ public final class BlockChain<T extends IBlockData> {
   public static final int REWARD_FOR_MINING = 100;
 
   private static BlockChain instance;
-  private List<Block<T>> chain;
+  private final List<Block<T>> chain;
   private final long creationTime;
   private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
-  private PendingData<T> pendingData;
-  private DifficultyManager difficultyManager;
+  private final PendingData<T> pendingData;
+  private final DifficultyManager difficultyManager;
   private Block<T> lastBlock;
   private static long uniqueId = 1;
-  private List<User<T>> users;
-  private PublicKey systemPublicKey;
-  private PrivateKey systemPrivateKey;
+  private final List<User<T>> users;
+  private final PublicKey systemPublicKey;
+  private final PrivateKey systemPrivateKey;
 
   private BlockChain() throws Exception {
     this.chain = new ArrayList<>();
@@ -61,23 +61,24 @@ public final class BlockChain<T extends IBlockData> {
       }
       addBlock(block);
       difficultyManager.adjustDifficulty(calculateBlockCreationTime());
-
-      PublicKey minerKey = block.getMinerPublicKey();
-      if (minerKey != null) {
-        byte[] signature;
-        try {
-          signature = Transaction.generateSignature(systemPublicKey, minerKey, REWARD_FOR_MINING,
-              systemPrivateKey);
-        } catch (Exception e) {
-          throw new RuntimeException(e);
-        }
-        Transaction rewardTx = new Transaction(systemPublicKey, "System", minerKey,
-            "Miner" + block.getMinerNumber(), getUniqueId(), signature, REWARD_FOR_MINING);
-        pendingData.addData((T) rewardTx);
-
-      }
+      addMinerRewardTransaction(block.getMinerPublicKey(), block.getMinerNumber());
     } finally {
       readWriteLock.writeLock().unlock();
+    }
+  }
+
+  private void addMinerRewardTransaction(PublicKey minerKey, int minerNumber) {
+    if (minerKey != null) {
+      byte[] signature;
+      try {
+        signature = Transaction.generateSignature(systemPublicKey, minerKey, REWARD_FOR_MINING,
+            systemPrivateKey);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+      Transaction rewardTx = new Transaction(systemPublicKey, "System", minerKey,
+          "Miner" + minerNumber, getUniqueId(), signature, REWARD_FOR_MINING);
+      pendingData.addData((T) rewardTx);
     }
   }
 
@@ -86,7 +87,7 @@ public final class BlockChain<T extends IBlockData> {
     lastBlock = block;
     pendingData.clearData();
     System.out.println();
-    System.out.println(block.toString());
+    System.out.print(block.toString());
     long timeOfCreation = calculateBlockCreationTime();
     System.out.println("Block was generating for " + timeOfCreation + " seconds");
   }
@@ -100,32 +101,31 @@ public final class BlockChain<T extends IBlockData> {
     return (lastBlock.getTimeStamp() - secondLastBlock.getTimeStamp()) / 1000;
   }
 
-  public synchronized boolean addNewData(T data) {
+  public synchronized void addNewData(T data) {
     readWriteLock.writeLock().lock();
     try {
       if (data instanceof Transaction tx) {
         if (!SignatureChecker.check(tx)) {
           System.out.println("Invalid signature. Rejected: " + tx);
-          return false;
+          return;
         }
 
         if (tx.isValid()) {
           int senderBalance = getBalance(tx.getSenderPublicKey());
           if (senderBalance < tx.getAmount()) {
             System.out.println("Not enough balance. Tx rejected: " + tx);
-            return false;
+            return;
           }
         }
       }
       pendingData.addData(data);
-      return true;
     } finally {
       readWriteLock.writeLock().unlock();
     }
 
   }
 
-  public synchronized int getBalance(PublicKey address) {
+  private synchronized int getBalance(PublicKey address) {
     int balance = 100;
     for (Block<T> b : chain) {
       for (T item : b.getData()) {
@@ -185,7 +185,13 @@ public final class BlockChain<T extends IBlockData> {
   }
 
   public Block<T> getLastBlock() {
-    return lastBlock;
+    readWriteLock.readLock().lock();
+    try {
+      return lastBlock;
+    } finally {
+      readWriteLock.readLock().unlock();
+    }
+
   }
 
   public List<Block<T>> getChain() {

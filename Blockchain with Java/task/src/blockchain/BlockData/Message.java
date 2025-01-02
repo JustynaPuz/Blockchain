@@ -1,6 +1,5 @@
 package blockchain.BlockData;
 
-import blockchain.Key.ISignableData;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
