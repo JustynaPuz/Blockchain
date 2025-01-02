@@ -38,13 +38,9 @@ public class Block<T extends IBlockData> {
     List<T> validatedItems = new ArrayList<>();
 
     for (T item : items) {
-      if (item.getUniqueId() <= maxIdentifierInBlock) {
-        System.err.println("Rejected item with ID: " + item.getUniqueId());
-      } else {
+      if (item.getUniqueId() > maxIdentifierInBlock) {
         validatedItems.add(item);
-        if (item.getUniqueId() > maxIdentifierInBlock) {
           maxIdentifierInBlock = item.getUniqueId();
-        }
       }
     }
     return validatedItems;
@@ -70,7 +66,6 @@ public class Block<T extends IBlockData> {
     return maxIdentifierInBlock;
   }
 
-
   public String getStringToHash() {
     return previousHashcode + magicNumber;
   }
@@ -95,9 +90,10 @@ public class Block<T extends IBlockData> {
         "Hash of the block: \n" +
         HashFunction.applySha256(this.getStringToHash()) +
         (dataList.isEmpty()
-            ? "\nBlock data: no data"
+            ? "\nBlock data: no data\n"
             : "\nBlock data:\n" + dataList.stream()
                 .map(Object::toString)
+                .map(o -> o + "\n")
                 .collect(Collectors.joining()));
   }
 }

@@ -2,9 +2,11 @@ package blockchain.User.Client;
 
 import blockchain.BlockChain.BlockChain;
 import blockchain.BlockData.IBlockData;
+import blockchain.User.User;
+import blockchain.User.UserFactory;
+import blockchain.User.UserType;
 
 public class ClientCoordinator<T extends IBlockData> {
-
   private final ThreadGroup clients = new ThreadGroup("ClientsGroup");
   private final int numberOfClients;
   private final BlockChain<T> blockChain;
@@ -16,7 +18,7 @@ public class ClientCoordinator<T extends IBlockData> {
 
   public void setup() throws Exception {
     for (int i = 1; i <= numberOfClients; i++) {
-      Client<T> client = new Client<>("Client" + i, blockChain);
+      User<T> client = UserFactory.createUser(UserType.CHAT_CLIENT, "Client" + i, blockChain);
       blockChain.addUser(client);
       Thread clientThread = new Thread(clients, client, "Client-" + i);
       clientThread.start();
@@ -30,6 +32,5 @@ public class ClientCoordinator<T extends IBlockData> {
         break;
       }
     }
-
   }
 }
