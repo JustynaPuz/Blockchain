@@ -3,7 +3,7 @@ package blockchain;
 import blockchain.BlockChain.BlockChain;
 import blockchain.BlockChain.BlockchainValidator;
 import blockchain.BlockData.Transaction;
-import blockchain.User.Client.TransactionClientCoordinator;
+import blockchain.User.TransactionClient.TransactionClientCoordinator;
 import blockchain.User.Miner.MiningCoordinator;
 
 

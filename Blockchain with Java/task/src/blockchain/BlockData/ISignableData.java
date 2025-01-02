@@ -1,4 +1,4 @@
-package blockchain.Key;
+package blockchain.BlockData;
 
 import java.security.PublicKey;
 

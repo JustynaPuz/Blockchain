@@ -1,12 +1,8 @@
 package blockchain.BlockData;
 
-import blockchain.Key.ISignableData;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
-import java.util.Objects;
 
 public class Transaction implements IBlockData, ISignableData {
 

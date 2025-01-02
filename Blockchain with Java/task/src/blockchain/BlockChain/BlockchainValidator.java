@@ -2,7 +2,7 @@ package blockchain.BlockChain;
 
 import blockchain.Block.Block;
 import blockchain.BlockData.IBlockData;
-import blockchain.Key.ISignableData;
+import blockchain.BlockData.ISignableData;
 import blockchain.Key.SignatureChecker;
 import java.util.List;
 import java.util.Objects;
