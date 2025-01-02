@@ -18,7 +18,7 @@ public class TransactionClientCoordinator<T extends IBlockData> {
     this.recipients = blockChain.getUsers();
   }
 
-  public void setup() throws Exception {
+  public void setup() {
     for (int i = 1; i <= numberOfClients; i++) {
       TransactionClient<T> client = new TransactionClient<>("Client" + i, blockChain, recipients);
       blockChain.addUser(client);
